@@ -91,3 +91,25 @@ for guard in sleep_records.keys():
 print "Heaviest sleeper was %s with %i minutes" % (heaviest_sleeper, most_minutes)
 
 # TODO: find minute of most overlap
+minute_to_sleeps = {}
+for wall_minute in range(0, 59):
+    for (start, length) in sleep_records[heaviest_sleeper]:
+        # i think i saw 23:59 some places, so watch out for that
+        if wall_minute >= start and wall_minute < start + length:
+            # count it
+            if wall_minute not in minute_to_sleeps:
+                minute_to_sleeps[wall_minute] = 1
+            else:
+                minute_to_sleeps[wall_minute] += 1
+
+# find overlappiest minute
+max_sleeps = -1
+max_minute = -1
+for minute in minute_to_sleeps.keys():
+    if minute_to_sleeps[minute] > max_sleeps:
+        max_sleeps = minute_to_sleeps[minute]
+        max_minute = minute
+
+print "Most popular minute = %i (slept %i times)" % (max_minute, max_sleeps)
+
+print "Answer is maybe %i x %i = %i" % (int(heaviest_sleeper), int(max_minute), int(heaviest_sleeper) * int(max_minute))
