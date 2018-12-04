@@ -90,26 +90,53 @@ for guard in sleep_records.keys():
 
 print "Heaviest sleeper was %s with %i minutes" % (heaviest_sleeper, most_minutes)
 
-# TODO: find minute of most overlap
-minute_to_sleeps = {}
-for wall_minute in range(0, 59):
-    for (start, length) in sleep_records[heaviest_sleeper]:
-        # i think i saw 23:59 some places, so watch out for that
-        if wall_minute >= start and wall_minute < start + length:
-            # count it
-            if wall_minute not in minute_to_sleeps:
-                minute_to_sleeps[wall_minute] = 1
-            else:
-                minute_to_sleeps[wall_minute] += 1
 
-# find overlappiest minute
-max_sleeps = -1
-max_minute = -1
-for minute in minute_to_sleeps.keys():
-    if minute_to_sleeps[minute] > max_sleeps:
-        max_sleeps = minute_to_sleeps[minute]
-        max_minute = minute
+
+def get_sleepiest_minute(guard):
+    # find minute of most overlap
+    minute_to_sleeps = {}
+    for wall_minute in range(0, 59):
+        for (start, length) in sleep_records[guard]:
+            # i think i saw 23:59 some places, so watch out for that
+            if wall_minute >= start and wall_minute < start + length:
+                # count it
+                if wall_minute not in minute_to_sleeps:
+                    minute_to_sleeps[wall_minute] = 1
+                else:
+                    minute_to_sleeps[wall_minute] += 1
+
+    # find overlappiest minute
+    max_sleeps = -1
+    max_minute = -1
+    for minute in minute_to_sleeps.keys():
+        if minute_to_sleeps[minute] > max_sleeps:
+            max_sleeps = minute_to_sleeps[minute]
+            max_minute = minute
+
+    return (max_minute, max_sleeps)
+
+# Part 1: which minute is the sleepiest guard
+# the most consistently asleep for?
+
+(max_minute, max_sleeps) = get_sleepiest_minute(heaviest_sleeper)
 
 print "Most popular minute = %i (slept %i times)" % (max_minute, max_sleeps)
 
-print "Answer is maybe %i x %i = %i" % (int(heaviest_sleeper), int(max_minute), int(heaviest_sleeper) * int(max_minute))
+print "Part 1: answer is maybe %i x %i = %i" % (int(heaviest_sleeper), int(max_minute), int(heaviest_sleeper) * int(max_minute))
+
+# Part 2: Which guard is the most consistently asleep?
+
+most_sleeps_so_far = -1
+their_minute = -1
+that_guard = -1
+
+for guard in sleep_records.keys():
+    (their_sleepiest_minute, times_slept_then) = get_sleepiest_minute(guard)
+    if times_slept_then > most_sleeps_so_far:
+        most_sleeps_so_far = times_slept_then
+        their_minute = their_sleepiest_minute
+        that_guard = guard
+
+print "Guard %s slept %i times on minute %i" % (that_guard, most_sleeps_so_far, their_minute)
+
+print "Part 2: answer is maybe guard %i x minute %i = %i" % (int(that_guard), int(their_minute), int(that_guard) * int(their_minute))
