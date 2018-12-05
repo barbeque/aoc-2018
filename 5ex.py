@@ -1,5 +1,6 @@
 with open('input5.txt') as i:
-    polymers = i.read()
+    polymers = i.read()[:-1]
+    assert len(polymers) == 50000
 
 # scan through the file and find the next match
 
@@ -14,7 +15,7 @@ def length_after_react(string):
             # match
             string = dropchr(string, i)
             string = dropchr(string, i) # i + 1 shifted left
-            i = 0 # start over (slow but sure)
+            i = max(0, i - 1) # start over (slow but sure)
             drops += 1
             if drops % 1000 == 0:
                 print "Reached %i drops, left = %i chars" % (drops, len(string))
@@ -24,6 +25,7 @@ def length_after_react(string):
             # we're done
             return len(string)
 
+assert dropchr('taco', 1) == 'tco'
 assert length_after_react('dabAcCaCBAcCcaDA') == 10
 print "Done tests"
 
