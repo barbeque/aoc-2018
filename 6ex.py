@@ -19,10 +19,44 @@ assert closest_to(0, 0, [(0, 1), (2, 3)]) == (0, 1)
 assert closest_to(0, 0, [(0, 1), (1, 0)]) == None
 assert closest_to(0, 0, [(0, 1), (10, 0), (-10, 0)]) == (0, 1)
 
-with open('input6.txt') as i:
+filename = 'input6-test.txt'
+
+with open(filename) as i:
     lines = i.readlines()
 
 coords = []
 for line in lines:
     x, y = line.split(',')
     coords.append( ( int(x), int(y) ) )
+
+def calculate_coord_frequency_for_size(width, coords):
+    grid = [ None ] * width * width
+    # Pre-Bake the grid
+    for y in range(0, width):
+        for x in range(0, width):
+            grid[ y * width + x ] = closest_to(x, y, coords)
+
+    results = {}
+    for coord in coords:
+        count = len(filter(lambda x: x == coord, grid))
+        results[coord] = count
+
+    return results
+
+# try two different sizes
+SIZE_A = 10
+SIZE_B = 50
+run_a = calculate_coord_frequency_for_size(SIZE_A, coords)
+run_b = calculate_coord_frequency_for_size(SIZE_B, coords)
+
+biggest_area_so_far = 0
+best_coord_so_far = None
+for coord in coords:
+    if run_a[coord] != run_b[coord]:
+        print "Probably infinite: %i, %i" % (coord[0], coord[1])
+    else:
+        if run_a[coord] > biggest_area_so_far:
+            biggest_area_so_far = run_a[coord]
+            best_coord_so_far = coord
+
+print "Biggest area is %i, from coord (%i,%i)" % (biggest_area_so_far, best_coord_so_far[0], best_coord_so_far[1])
