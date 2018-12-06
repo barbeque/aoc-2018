@@ -17,6 +17,7 @@ def closest_to(x, y, coords):
 
 assert closest_to(0, 0, [(0, 1), (2, 3)]) == (0, 1)
 assert closest_to(0, 0, [(0, 1), (1, 0)]) == None
+assert closest_to(0, 0, [(0, 1), (10, 0), (-10, 0)]) == (0, 1)
 
 with open('input6.txt') as i:
     lines = i.readlines()
