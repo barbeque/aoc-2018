@@ -15,83 +15,64 @@ for line in lines:
     else:
         assert "no match on line '%s'" % line
 
-def is_step_available(rs, completed_steps, instructions):
-    # Let's imagine we are evaluating B -> Y.
+class GraphNode:
+    def __init__(self, my_id):
+        self.my_id = my_id
+        self.has_visited = False
+        # from this node to another
+        self.out_nodes = []
+        # from another node to this one
+        self.in_nodes = []
 
-    # First stop, get all of the instructions that produce Y.
-    instructions_producing_me = \
-        filter(lambda i: i[1] == rs[1], instructions)
+    def mark_visited(self):
+        assert self.can_mark()
 
-    # If there are, make sure that all of those instructions
-    # can be executed, right now.
-    # This will include checking if B has been travelled to.
-    for instruction_producing_me in instructions_producing_me:
-        prereq = instruction_producing_me[0]
-        if prereq not in completed_steps:
-            return False
+        self.has_visited = True
 
-    return True
+    def can_mark(self):
+        return len(filter(lambda n: n.has_visited != True, self.in_nodes)) == 0
 
-def find_available_steps(completed_steps, instructions):
-    return filter(lambda rs: is_step_available(rs, completed_steps, instructions), instructions)
+    def attach_child(self, new_node):
+        # doubly linked
+        self.out_nodes.append(new_node)
+        new_node.in_nodes.append(self)
 
-# ok let's iterate some steps
-instructions = sorted(instructions, key=lambda kv: kv[0])
-print '%i instructions' % len(instructions)
+# let's build the graph
+all_nodes = {}
 
-completed_steps = []
+# part 1: construct all nodes
+for instruction in instructions:
+    if instruction[0] not in all_nodes.keys():
+        all_nodes[instruction[0]] = GraphNode(instruction[0])
+    if instruction[1] not in all_nodes.keys():
+        all_nodes[instruction[1]] = GraphNode(instruction[1])
 
-# first step: find a step, or steps with no pre-requisite for it
-potential_first_steps = []
-for rs in instructions:
-    prereq = rs[0]
-    if len(filter(lambda rs: rs[1] == prereq, instructions)) == 0:
-        # there is no pre-requisite for this step, so advance to it
-        potential_first_steps.append(prereq)
+print 'Nodes loaded = %i' % len(all_nodes)
 
-print 'There are %i choices for a first step.' % len(potential_first_steps)
+# part 2: construct all relationships
+# sure this is slower, but it doesn't really matter
+for instruction in instructions:
+    from_node = all_nodes[instruction[0]]
+    to_node = all_nodes[instruction[1]]
+    from_node.attach_child(to_node)
 
-# let's run them ALL
-for starter in set(potential_first_steps):
-    completed_steps.append(starter)
+def get_available_nodes(all_nodes):
+    untraveled_nodes = filter(lambda n: not n.has_visited, all_nodes.values())
+    markable_nodes = filter(lambda n: n.can_mark(), untraveled_nodes)
+    return markable_nodes
 
-# let's go
-assert is_step_available(('A', 'C'), ['A'], [('A', 'C')])
-assert not is_step_available(('D', 'F'), ['A'], [('A', 'C'), ('D', 'F')])
-assert not is_step_available(('D', 'E'), ['B', 'D'], [('C', 'E'), ('D', 'E')])
-assert find_available_steps(['A'], [('A', 'C'), ('D', 'F')]) == [('A', 'C')]
+# part 3: traverse graph
+def get_next_available_node(all_nodes):
+    avails = get_available_nodes(all_nodes)
+    assert len(avails) > 0, "Ran out of nodes!"
+    s = sorted(avails, key=lambda n: n.my_id)
+    return s[0]
 
-instruction_count = len(instructions)
+traversal_log = []
+while len(traversal_log) < len(all_nodes):
+    hit_next = get_next_available_node(all_nodes)
+    hit_next.mark_visited()
 
-while len(instructions) > 0:
-    potential_next_steps = find_available_steps(completed_steps, instructions)
+    traversal_log.append(hit_next.my_id)
 
-    if len(potential_next_steps) == 0:
-        print "ran out of steps: %s [%i]" % (''.join(completed_steps), len(completed_steps))
-        print "never-hit instructions:"
-        for instruction in instructions:
-            print "%s => %s" % (instruction[0], instruction[1])
-        assert False
-        
-
-    # take the alphabetically earliest one
-    # ...and delete it
-    next_rs = sorted(potential_next_steps)[0]
-    instructions.remove(next_rs)
-
-    print 'Possible steps: %s' % ', '.join(map(lambda rs: "%s => %s" % (rs[0], rs[1]), potential_next_steps))
-    print 'Taking %s => %s' % (next_rs[0], next_rs[1])
-
-    # mark it down and keep going
-    completed_steps.append(next_rs[1])
-
-    # remove all other instructions where next_rs[1] == instruction[1],
-    # so we don't double visit...
-    instructions = filter(lambda inst: inst[1] != next_rs[1], instructions)
-
-assert len(set(completed_steps)) == len(completed_steps), "DOUBLE VISIT DETECTED"
-
-# i assume we are completed now
-s = ''.join(completed_steps)
-print '%i steps taken' % len(s)
-print 'Correct order: %s' % s
+print 'Traversal log: %s' % ''.join(traversal_log)
