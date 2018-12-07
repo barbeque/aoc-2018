@@ -67,23 +67,62 @@ for instruction in instructions:
     to_node = all_nodes[instruction[1]]
     from_node.attach_child(to_node)
 
-def get_available_nodes(all_nodes):
+def is_being_worked_on(node, work_in_progress):
+    for (started_on, job_node) in work_in_progress:
+        if job_node == node:
+            return True
+    return False
+
+def get_available_nodes(all_nodes, work_in_progress):
     untraveled_nodes = filter(lambda n: not n.has_visited, all_nodes.values())
     markable_nodes = filter(lambda n: n.can_mark(), untraveled_nodes)
-    return markable_nodes
+    not_working_on = filter(lambda n: not is_being_worked_on(n, work_in_progress), markable_nodes)
+    return not_working_on
 
 # part 3: traverse graph
-def get_next_available_node(all_nodes):
-    avails = get_available_nodes(all_nodes)
-    assert len(avails) > 0, "Ran out of nodes!"
+def get_next_available_node(all_nodes, work_in_progress):
+    avails = get_available_nodes(all_nodes, work_in_progress)
+
+    # there may not be work available for a worker right now
+    if len(avails) < 1:
+        return None
+
     s = sorted(avails, key=lambda n: n.my_id)
     return s[0]
 
 traversal_log = []
-while len(traversal_log) < len(all_nodes):
-    hit_next = get_next_available_node(all_nodes)
-    hit_next.mark_visited()
+t = 0
+work_in_progress = []
+WORKER_COUNT = 5
 
-    traversal_log.append(hit_next.my_id)
+def should_close_work(t, wip_record):
+    # started_on + time to close
+    close_time = wip_record[0] + wip_record[1].duration
+
+    assert t <= close_time, "close_time is in the past. we missed it?"
+
+    return t == close_time
+
+while len(traversal_log) < len(all_nodes):
+    # close out all work that closes in this second
+    work_to_close = filter(lambda wip: should_close_work(t, wip), work_in_progress)
+    for (start, node) in work_to_close:
+        node.mark_visited()
+        work_in_progress.remove((start, node))
+        print "Node %s completed." % (node.my_id)
+        traversal_log.append(node.my_id)
+
+    # pick up new work
+    while len(work_in_progress) < WORKER_COUNT:
+        hit_next = get_next_available_node(all_nodes, work_in_progress)
+        if hit_next != None:
+            work_in_progress.append( ( t, hit_next ) )
+            print "Started worker %i on job %s" % (len(work_in_progress), hit_next.my_id)
+        else:
+            # worker idled, no work for them :(
+            break
+
+    t += 1
 
 print 'Traversal log: %s' % ''.join(traversal_log)
+print 'Total time: %i' % (t - 1) # i think -1 is right
