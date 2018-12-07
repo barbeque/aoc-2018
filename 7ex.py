@@ -1,6 +1,6 @@
 import re
 
-with open('input7-test.txt') as i:
+with open('input7.txt') as i:
     lines = i.readlines()
 
 instructions = []
@@ -16,22 +16,21 @@ for line in lines:
         assert "no match on line '%s'" % line
 
 def is_step_available(rs, completed_steps, instructions):
-    # get all my pre-reqs in instructions
-    # req => action
-    # rs[0] must have been completed
-    if rs[0] not in completed_steps:
-        print 'Rejected %s => %s because %s not completed' % (rs[0], rs[1], rs[0])
-        return False
-    # all pre-reqs of rs[1] must be in completed_steps
-    my_prereqs = filter(lambda i: i[1] == rs[1], instructions)
-    unmet_prereqs = filter(lambda i: i[0] not in completed_steps, my_prereqs)
+    # Let's imagine we are evaluating B -> Y.
 
-    if len(unmet_prereqs) == 0:
-        print '%s => %s can go ahead' % (rs[0], rs[1])
-        return True
-    else:
-        print '%s => %s rejected because %s has unmet requirements' % (rs[0], rs[1], rs[1])
-        return False
+    # First stop, get all of the instructions that produce Y.
+    instructions_producing_me = \
+        filter(lambda i: i[1] == rs[1], instructions)
+
+    # If there are, make sure that all of those instructions
+    # can be executed, right now.
+    # This will include checking if B has been travelled to.
+    for instruction_producing_me in instructions_producing_me:
+        prereq = instruction_producing_me[0]
+        if prereq not in completed_steps:
+            return False
+
+    return True
 
 def find_available_steps(completed_steps, instructions):
     return filter(lambda rs: is_step_available(rs, completed_steps, instructions), instructions)
