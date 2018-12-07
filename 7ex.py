@@ -1,6 +1,6 @@
 import re
 
-with open('input7.txt') as i:
+with open('input7-test.txt') as i:
     lines = i.readlines()
 
 instructions = []
@@ -64,9 +64,16 @@ assert find_available_steps(['A'], [('A', 'C'), ('D', 'F')]) == [('A', 'C')]
 
 instruction_count = len(instructions)
 
-while len(completed_steps) < instruction_count:
+while len(instructions) > 0:
     potential_next_steps = find_available_steps(completed_steps, instructions)
-    assert len(potential_next_steps) > 0, ("Ran out of steps... ", completed_steps, len(completed_steps))
+
+    if len(potential_next_steps) == 0:
+        print "ran out of steps: %s [%i]" % (''.join(completed_steps), len(completed_steps))
+        print "never-hit instructions:"
+        for instruction in instructions:
+            print "%s => %s" % (instruction[0], instruction[1])
+        assert False
+        
 
     # take the alphabetically earliest one
     # ...and delete it
@@ -76,11 +83,14 @@ while len(completed_steps) < instruction_count:
     print 'Possible steps: %s' % ', '.join(map(lambda rs: "%s => %s" % (rs[0], rs[1]), potential_next_steps))
     print 'Taking %s => %s' % (next_rs[0], next_rs[1])
 
-    if next_rs[1] in completed_steps:
-        assert "DOUBLE VISITED %s" % next_rs[1]
-
     # mark it down and keep going
     completed_steps.append(next_rs[1])
+
+    # remove all other instructions where next_rs[1] == instruction[1],
+    # so we don't double visit...
+    instructions = filter(lambda inst: inst[1] != next_rs[1], instructions)
+
+assert len(set(completed_steps)) == len(completed_steps), "DOUBLE VISIT DETECTED"
 
 # i assume we are completed now
 s = ''.join(completed_steps)
