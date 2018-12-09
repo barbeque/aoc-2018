@@ -53,15 +53,15 @@ def get_high_score(players, winning_score):
             
             # add the score
             total_scores[this_player] += score
-
-            if score == winning_score:
-                # winner!!!
-                return total_scores[this_player]
         else:
             next_i = (current_marble_idx + 2) % len(circle)
             circle.insert(next_i, next_marble)
             next_marble += 1
             current_marble_idx = next_i
+
+        if next_marble - 1 == winning_score:
+            print 'Marble worth %i has been placed' % winning_score
+            return max(total_scores)
 
         step += 1
 
