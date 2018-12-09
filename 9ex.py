@@ -48,9 +48,9 @@ def get_high_score(players, winning_score):
             # remove the marble 7 counterclockwise
             idx = (current_marble_idx - 7) % len(circle)
             score += circle.pop(idx)
-            # the new current marble is one clockwise of that (so basically the same idx)
-            current_marble_idx = idx % len(circle)
-
+            # the new current marble is one clockwise of that
+            current_marble_idx = (idx) % len(circle)
+            
             # add the score
             total_scores[this_player] += score
 
@@ -58,7 +58,6 @@ def get_high_score(players, winning_score):
                 # winner!!!
                 return total_scores[this_player]
         else:
-            # ehhh
             next_i = (current_marble_idx + 2) % len(circle)
             circle.insert(next_i, next_marble)
             next_marble += 1
