@@ -40,7 +40,7 @@ def update(nodes):
         node['x'] += node['vx']
         node['y'] += node['vy']
 
-def dump_frame_to_disk(nodes, width, height):
+def dump_frame_to_disk(nodes, width, height, t):
     im = Image.new('L', (width + 1, height + 1), 'black')
     pixels = im.load()
 
@@ -55,7 +55,7 @@ def dump_frame_to_disk(nodes, width, height):
 
         pixels[x, y] = 255 # white
 
-    im.save('frame.png', 'PNG')
+    im.save('frame-%i.png' % t, 'PNG')
 
 def render_frame(nodes, prev_width, prev_height, t):
     (min_x, min_y, max_x, max_y) = bounding_rect(nodes)
@@ -65,7 +65,7 @@ def render_frame(nodes, prev_width, prev_height, t):
 
     if t > 9998:
         # clued in by about when dimensions started increasing
-        dump_frame_to_disk(nodes, width, height)
+        dump_frame_to_disk(nodes, width, height, t)
         import pdb; pdb.set_trace()
 
     #print 'map is now %i by %i' % (width, height)
