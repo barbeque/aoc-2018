@@ -48,15 +48,15 @@ def display_state(turn, state):
     print ''
 
 
-display_state(0, state)
-
 def should_apply(rule, pot_idx, state):
     # get the slice representing the pot idx
-    chunk = state[(pot_idx - 2):(pot_idx)] + state[(pot_idx):(pot_idx + 3)]
-    assert len(chunk) == 5, 'sliced chunk is wrong size %i' % len(chunk)
-    
-    import pdb; pdb.set_trace()
+    if pot_idx + 2 >= len(state) or pot_idx + 1 >= len(state):
+        # ran off right side
+        return False
 
+    chunk = state[(pot_idx - 2):(pot_idx)] + state[(pot_idx):(pot_idx + 3)]
+    assert len(chunk) == 5, 'sliced chunk at position %i is wrong size %i' % (i, len(chunk))
+    
     if chunk == rule[0]:
         return True
     return False
@@ -68,9 +68,28 @@ def apply_rules(rules, state):
 
     # how the fuck do we deal with the negative numbers?
     # do they get applied? do we always assume anything left of 0 is always not-plant?
+    new_state.append(False)
+    new_state.append(False)
+    new_state.append(False) # hack: always assume -3, -2, -1 are false... until proven otherwise
+
+    # apply rules
+    for i in range(3, len(state)):
+        for rule in rules:
+            if should_apply(rule, i, state):
+                # apply rule
+                new_state.append(rule[1])
+                break
+        else:
+            # no rule applied, so don't bother
+            new_state.append(state[i])
 
     assert len(state) == len(new_state), "Lengths not the same on input and output, corrupted"
     return new_state
+
+# add some fake stuff to the left to support -1, -2, -3 like in the example
+state = [False, False, False] + state
+
+display_state(0, state)
 
 NUM_GENS = 20
 for turn in range(0, NUM_GENS):
