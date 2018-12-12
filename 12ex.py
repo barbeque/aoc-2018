@@ -53,6 +53,9 @@ def should_apply(rule, pot_idx, state):
     if pot_idx + 2 >= len(state) or pot_idx + 1 >= len(state):
         # ran off right side
         return False
+    if pot_idx - 2 < 0 or pot_idx -1 < 0:
+        # ran off left side
+        return False
 
     chunk = state[(pot_idx - 2):(pot_idx)] + state[(pot_idx):(pot_idx + 3)]
     assert len(chunk) == 5, 'sliced chunk at position %i is wrong size %i' % (i, len(chunk))
@@ -68,12 +71,9 @@ def apply_rules(rules, state):
 
     # how the fuck do we deal with the negative numbers?
     # do they get applied? do we always assume anything left of 0 is always not-plant?
-    new_state.append(False)
-    new_state.append(False)
-    new_state.append(False) # hack: always assume -3, -2, -1 are false... until proven otherwise
 
     # apply rules
-    for i in range(3, len(state)):
+    for i in range(0, len(state)):
         for rule in rules:
             if should_apply(rule, i, state):
                 # apply rule
@@ -86,8 +86,14 @@ def apply_rules(rules, state):
     assert len(state) == len(new_state), "Lengths not the same on input and output, corrupted"
     return new_state
 
-# add some fake stuff to the left to support -1, -2, -3 like in the example
-state = [False, False, False] + state
+original_length = len(state)
+
+# there is clearly a ton of padding in both fucking directions - it inflates a length 25 to a length 39 in the example
+PADDING = 100 # that should be enough
+for i in range(0, PADDING):
+    state = [False] + state + [False]
+
+start_offset = PADDING
 
 display_state(0, state)
 
@@ -98,8 +104,9 @@ for turn in range(0, NUM_GENS):
 
 # get the sum of plants
 s = 0
-for i in range(0, len(state)):
-    if state[i] == True:
+for i in range(0, original_length):
+    if state[i + PADDING] == True:
         s += 1
 
 print 'Total number of plants at end of run: %i' % s
+# it wasn't 48, 46, 40, or 33 - we need to solve the fucking negative index problem
