@@ -57,7 +57,7 @@ fn main() {
         println!("Square size = {}", sq_size);
         for x in 0..300usize {
             for y in 0..300usize {
-                let total_power = sum_square(&cells, x, y);
+                let total_power = sum_square(&cells, x, y, sq_size);
                 if total_power > best_power {
                     best_power = total_power;
                     best_coord = (x, y, sq_size);
