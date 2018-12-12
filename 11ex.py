@@ -21,6 +21,7 @@ for x in range(1, 301):
         power_level += serial_number
         power_level *= rack_id
         power_level = hunnets(power_level)
+        power_level -= 5
 
         # array is 0-indexed of course
         idx = (y - 1) * 300 + (x - 1)

@@ -25,6 +25,8 @@ fn sum_square(cells: &[[i32; 300]; 300], x: usize, y: usize, w: usize) -> i32 {
 }
 
 fn main() {
+    assert_eq!(hunnets(0), 0);
+    assert_eq!(hunnets(5), 0);
     assert_eq!(hunnets(45), 0);
     assert_eq!(hunnets(12345), 3);
     assert_eq!(hunnets(128), 1);
@@ -39,7 +41,9 @@ fn main() {
             let mut power_level : i32 = rack_id * y as i32;
             power_level += serial_number;
             power_level *= rack_id;
+            // keep only the hundreds digit of the power level
             power_level = hunnets(power_level);
+            power_level -= 5;
 
             cells[y - 1][x - 1] = power_level
         }
@@ -53,14 +57,15 @@ fn main() {
         println!("Square size = {}", sq_size);
         for x in 0..300usize {
             for y in 0..300usize {
-                let total_power = sum_square(&cells, x, y, sq_size);
+                let total_power = sum_square(&cells, x, y);
                 if total_power > best_power {
                     best_power = total_power;
                     best_coord = (x, y, sq_size);
+                    println!("\tNew best power = {} at coord = {},{},{}", best_power, best_coord.0 + 1, best_coord.1 + 1, best_coord.2);
                 }
             }
         }
     }
 
-    println!("Best power = {} at coord = {},{},{}", best_power, best_coord.0 + 1, best_coord.1 + 1, best_coord.2 + 1);
+    println!("Best power = {} at coord = {},{},{}", best_power, best_coord.0 + 1, best_coord.1 + 1, best_coord.2);
 }
