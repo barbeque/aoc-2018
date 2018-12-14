@@ -22,7 +22,7 @@ assert parse_rule('##### => .')[0] == [True, True, True, True, True]
 assert parse_rule('##### => .')[1] == False
 assert parse_rule('#.#.# => .')[0] == [True, False, True, False, True]
 
-with open('input12-test.txt') as i:
+with open('input12.txt') as i:
     initial_state = i.readline()
     assert initial_state.startswith('initial state:')
 
