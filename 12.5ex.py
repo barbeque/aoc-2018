@@ -103,7 +103,7 @@ def apply_rules(rules, state):
 original_length = len(state)
 
 # there is clearly a ton of padding in both fucking directions - it inflates a length 25 to a length 39 in the example
-PADDING = 100 # that should be enough
+PADDING = 1000 # that should be enough
 for i in range(0, PADDING):
     state = [False] + state + [False]
 assert len(state) == original_length + 2 * PADDING
@@ -111,11 +111,15 @@ assert len(state) == original_length + 2 * PADDING
 start_offset = PADDING
 
 display_state(0, start_offset, state)
+last_sum = 0
 
 NUM_GENS = 50000000000 # holy dicks
 for turn in range(0, NUM_GENS):
     state = apply_rules(rules, state)
-    print("%i: %i" % (turn + 1, state_sum(start_offset, state)))
+
+    this_sum = state_sum(start_offset, state)
+    print("%i: %i (difference: %i)" % (turn + 1, this_sum, (this_sum - last_sum)))
+    last_sum = this_sum
 
 # get the sum of plant indices starting at position 0
 s = 0
