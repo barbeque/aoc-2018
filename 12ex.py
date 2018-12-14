@@ -89,11 +89,11 @@ def apply_rules(rules, state):
             if should_apply(rule, i, state):
                 # apply rule
                 new_state.append(rule[1])
-                print 'applying rule [%s] at idx %i' % (rule[2], i - 100) # hack
+                #print 'applying rule [%s] at idx %i' % (rule[2], i - 100) # hack
                 break
         else:
-            # no rule applied, so don't bother
-            new_state.append(state[i])
+            # no rule applied, copy from the old state
+            new_state.append(False) # hack
 
     assert len(state) == len(new_state), "Lengths not the same on input and output, corrupted"
     return new_state
