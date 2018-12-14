@@ -74,6 +74,14 @@ def should_apply(rule, pot_idx, state):
 
 assert should_apply(([True, True, False, True, True], True), 2, [True, True, False, True, True])
 
+def state_sum(start_offset, state):
+    s = 0
+    for i in range(0, len(state)):
+        if state[i] == True:
+            s += (i - start_offset)
+    return s
+
+
 def apply_rules(rules, state):
     new_state = []
 
@@ -107,7 +115,7 @@ display_state(0, start_offset, state)
 NUM_GENS = 50000000000 # holy dicks
 for turn in range(0, NUM_GENS):
     state = apply_rules(rules, state)
-    display_state(turn + 1, start_offset, state)
+    print("%i: %i" % (turn + 1, state_sum(start_offset, state)))
 
 # get the sum of plant indices starting at position 0
 s = 0
