@@ -117,9 +117,9 @@ for turn in range(0, NUM_GENS):
 
 # get the sum of plant indices starting at position 0
 s = 0
-for i in range(0, original_length):
-    if state[i + PADDING] == True:
-        s += i
+for i in range(0, len(state)):
+    if state[i] == True:
+        s += (i - start_offset)
 
 print 'Index-sum of plants at end of run: %i' % s
 # it wasn't 2186, 48, 46, 40, or 33 - we need to solve the fucking negative index problem
