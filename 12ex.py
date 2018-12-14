@@ -1,31 +1,45 @@
 import sys
 
-with open('input12.txt') as i:
+def parse_rule(rule):
+    (match, arrow, result) = rule.split()
+    new_match = []
+    # what is the pattern we identify?
+    for c in match:
+        if c == '#':
+            new_match.append(True)
+        elif c == '.':
+            new_match.append(False) # should use map
+        else:
+            assert "Unknown character in rule"
+
+    # what do we turn the pot under inspection into?
+    if result == '#':
+        return (new_match, True, rule.strip())
+    else:
+        return (new_match, False, rule.strip())
+
+assert parse_rule('##### => .')[0] == [True, True, True, True, True]
+assert parse_rule('##### => .')[1] == False
+assert parse_rule('#.#.# => .')[0] == [True, False, True, False, True]
+
+with open('input12-test.txt') as i:
     initial_state = i.readline()
     assert initial_state.startswith('initial state:')
 
     idx = len('initial state: ')
-    initial_state = initial_state[idx:].strip()
+    initial_state = initial_state[idx:].strip() # works
+    print initial_state # works
 
     i.readline() # skip blank
 
     # read the rest
     rules = i.readlines()
-    
+
     # parse the rules
     new_rules = []
     for rule in rules:
-        (match, arrow, result) = rule.split()
-        new_match = []
-        for c in match:
-            if c == '#':
-                new_match.append(True)
-            else:
-                new_match.append(False) # should use map
-        if result == '#':
-            new_rules.append((new_match, True))
-        else:
-            new_rules.append((new_match, False)) # so wasteful
+        new_rules.append(parse_rule(rule))
+
     rules = new_rules
 
 # load the initial_state into state
@@ -38,10 +52,10 @@ for i in range(0, len(initial_state)):
     else:
         assert False, 'Unknown character in initial_state (%s)' % (initial_state[i])
 
-def display_state(turn, state):
+def display_state(turn, offset, state):
     sys.stdout.write('%04d:' % turn)
-    for i in range(0, len(state)):
-        if state[i]:
+    for i in range(0, len(state) - offset):
+        if state[i + offset]:
             sys.stdout.write('#')
         else:
             sys.stdout.write('.')
@@ -53,13 +67,13 @@ def should_apply(rule, pot_idx, state):
     if pot_idx + 2 >= len(state) or pot_idx + 1 >= len(state):
         # ran off right side
         return False
-    if pot_idx - 2 < 0 or pot_idx -1 < 0:
+    if pot_idx - 2 < 0 or pot_idx - 1 < 0:
         # ran off left side
         return False
 
     chunk = state[(pot_idx - 2):(pot_idx)] + state[(pot_idx):(pot_idx + 3)]
     assert len(chunk) == 5, 'sliced chunk at position %i is wrong size %i' % (i, len(chunk))
-    
+
     if chunk == rule[0]:
         return True
     return False
@@ -69,15 +83,13 @@ assert should_apply(([True, True, False, True, True], True), 2, [True, True, Fal
 def apply_rules(rules, state):
     new_state = []
 
-    # how the fuck do we deal with the negative numbers?
-    # do they get applied? do we always assume anything left of 0 is always not-plant?
-
     # apply rules
     for i in range(0, len(state)):
         for rule in rules:
             if should_apply(rule, i, state):
                 # apply rule
                 new_state.append(rule[1])
+                print 'applying rule [%s] at idx %i' % (rule[2], i - 100) # hack
                 break
         else:
             # no rule applied, so don't bother
@@ -92,21 +104,22 @@ original_length = len(state)
 PADDING = 100 # that should be enough
 for i in range(0, PADDING):
     state = [False] + state + [False]
+assert len(state) == original_length + 2 * PADDING
 
 start_offset = PADDING
 
-display_state(0, state)
+display_state(0, start_offset, state)
 
 NUM_GENS = 20
 for turn in range(0, NUM_GENS):
     state = apply_rules(rules, state)
-    display_state(turn + 1, state)
+    display_state(turn + 1, start_offset, state)
 
-# get the sum of plants
+# get the sum of plant indices starting at position 0
 s = 0
 for i in range(0, original_length):
     if state[i + PADDING] == True:
-        s += 1
+        s += i
 
-print 'Total number of plants at end of run: %i' % s
-# it wasn't 48, 46, 40, or 33 - we need to solve the fucking negative index problem
+print 'Index-sum of plants at end of run: %i' % s
+# it wasn't 2186, 48, 46, 40, or 33 - we need to solve the fucking negative index problem
