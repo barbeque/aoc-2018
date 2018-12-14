@@ -121,6 +121,10 @@ for turn in range(0, NUM_GENS):
     print("%i: %i (difference: %i)" % (turn + 1, this_sum, (this_sum - last_sum)))
     last_sum = this_sum
 
+# if you ever hit here you must be bored
+# after turn 167 (sum = 5011) we started to see a steady +26 every turn after
+# so just (50 billion - 167) * 26 + 5011 = 1300000000669
+
 # get the sum of plant indices starting at position 0
 s = 0
 for i in range(0, len(state)):
